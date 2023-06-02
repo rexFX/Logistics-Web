@@ -1,0 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Noto+Sans:wght@200;300&family=Poppins:wght@500&family=Ubuntu&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
