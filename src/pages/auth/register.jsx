@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 const Register = () => {
 	const [fullName, setFullName] = useState("");
@@ -10,9 +11,12 @@ const Register = () => {
 	const [pincode, setPincode] = useState("");
 	const [error, setError] = useState("");
 	const [checkError, setCheckError] = useState(false);
+	const [dropdown, setDropdown] = useState(false);
+	const [selectedOption, setSelectedOption] = useState("");
 
 	const registrationHandler = (event) => {
 		event.preventDefault();
+
 		if (/^\d+$/.test(pincode) === false) {
 			setError("Pincode should be a number");
 			setCheckError(true);
@@ -46,6 +50,12 @@ const Register = () => {
 			return;
 		}
 
+		if (selectedOption === "") {
+			setError("Please tell us who you are");
+			setCheckError(true);
+			return;
+		}
+
 		setError("");
 		setCheckError(false);
 		console.log("registered");
@@ -58,10 +68,7 @@ const Register = () => {
 					Create Account
 				</h1>
 				<div className="mt-2 w-full">
-					<form
-						onSubmit={registrationHandler}
-						className="h-full flex flex-col justify-center items-center mt-5"
-					>
+					<form className="h-full flex flex-col justify-center items-center mt-5">
 						<input
 							type="text"
 							className="p-3
@@ -177,9 +184,64 @@ const Register = () => {
 								required
 							/>
 						</div>
+						<div className="w-full flex flex-col justify-between items-center relative">
+							<button
+								className="p-3
+								w-full
+								rounded-md
+								border-gray-300
+								shadow-sm
+								outline-0
+								font-noto
+								bg-white
+								flex
+								justify-between
+								items-center
+								px-5
+								"
+								onClick={(e) => {
+									e.preventDefault();
+									setDropdown(!dropdown);
+								}}
+							>
+								{selectedOption === "" ? (
+									<span className="text-gray-400">
+										What should we call you?
+									</span>
+								) : (
+									<span>{selectedOption}</span>
+								)}
+
+								{dropdown ? <FiChevronUp /> : <FiChevronDown />}
+							</button>
+							{dropdown && (
+								<div className="w-full flex flex-col justify-center items-center absolute top-11 rounded-b-lg bg-white">
+									<h3
+										className="font-noto hover:bg-gray-200 w-full p-3 text-center cursor-pointer"
+										onClick={(e) => {
+											e.preventDefault();
+											setSelectedOption("Transporter");
+											setDropdown(false);
+										}}
+									>
+										Transporter
+									</h3>
+									<h3
+										className="font-noto hover:bg-gray-200 w-full p-3 text-center rounded-b-lg cursor-pointer"
+										onClick={(e) => {
+											e.preventDefault();
+											setSelectedOption("Manufacturer");
+											setDropdown(false);
+										}}
+									>
+										Manufacturer
+									</h3>
+								</div>
+							)}
+						</div>
 						<button
-							type="submit"
 							className="w-[80%] bg-[#5E81AC] p-3 shadow-xl rounded-lg my-3 font-ubuntu text-white hover:bg-[#81A1C1] transition-colors"
+							onClick={registrationHandler}
 						>
 							Register
 						</button>

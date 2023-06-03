@@ -19,7 +19,8 @@ export default {
       indigo: colors.indigo,
       white: colors.white,
       black: colors.black,
-      red: colors.red
+      red: colors.red,
+      gray: colors.gray,
       // slate: colors.slate
     },
     backgroundImage: {
