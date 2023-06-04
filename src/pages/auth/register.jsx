@@ -1,5 +1,8 @@
 import { useState } from "react";
+import axios from "axios";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { ReactComponent as Loading } from "../../assets/loading.svg";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
 	const [fullName, setFullName] = useState("");
@@ -13,52 +16,36 @@ const Register = () => {
 	const [checkError, setCheckError] = useState(false);
 	const [dropdown, setDropdown] = useState(false);
 	const [selectedOption, setSelectedOption] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [success, setSuccess] = useState("");
+
+	const navigate = useNavigate();
 
 	const registrationHandler = (event) => {
 		event.preventDefault();
-
-		if (/^\d+$/.test(pincode) === false) {
-			setError("Pincode should be a number");
-			setCheckError(true);
-			return;
-		}
-
-		if (pincode.length !== 6) {
-			setError("Pincode should be 6 digits");
-			setCheckError(true);
-			return;
-		}
-
-		if (
-			countryCode[0] !== "+" ||
-			/^\d+$/.test(countryCode.slice(1)) === false
-		) {
-			setError("Country code should be a number starting with +");
-			setCheckError(true);
-			return;
-		}
-
-		if (/^\d+$/.test(phoneNumber) === false) {
-			setError("Phone number should be a number");
-			setCheckError(true);
-			return;
-		}
-
-		if (phoneNumber.length !== 10) {
-			setError("Phone number should be 10 digits");
-			setCheckError(true);
-			return;
-		}
-
-		if (selectedOption === "") {
-			setError("Please tell us who you are");
-			setCheckError(true);
-			return;
-		}
-
-		setError("");
-		setCheckError(false);
-		console.log("registered");
+		setLoading(true);
+		setSuccess("");
+		axios
+			.post(import.meta.env.VITE_BACKEND + "/api/register", {
+				name: fullName,
+				email: email,
+				password: password,
+				countryCode: countryCode,
+				phone: phoneNumber,
+				address: address,
+				pincode: pincode,
+				type: selectedOption,
+			})
+			.then(() => {
+				setSuccess("User Registered Successfully");
+				setCheckError(false);
+				setLoading(false);
+			})
+			.catch((err) => {
+				setCheckError(true);
+				setLoading(false);
+				setError(err.response.data.message);
+			});
 	};
 
 	return (
@@ -240,17 +227,40 @@ const Register = () => {
 							)}
 						</div>
 						<button
-							className="w-[80%] bg-[#5E81AC] p-3 shadow-xl rounded-lg my-3 font-ubuntu text-white hover:bg-[#81A1C1] transition-colors"
+							className="w-[80%] bg-[#5E81AC] p-3 shadow-xl rounded-lg my-3 font-ubuntu text-white hover:bg-[#81A1C1] transition-colors flex justify-center items-center"
 							onClick={registrationHandler}
 						>
-							Register
+							{loading ? <Loading fill="white" /> : "Register"}
 						</button>
+						{checkError && (
+							<div className="w-full flex justify-center items-center mb-6">
+								<p className="text-red-500 font-noto">
+									{error}
+								</p>
+							</div>
+						)}
+						{success.length > 0 && (
+							<div className="w-full flex justify-center items-center">
+								<p className="text-green-600 font-noto text-bold">
+									{success}
+								</p>
+							</div>
+						)}
 					</form>
-					{checkError && (
-						<div className="w-full flex justify-center items-center">
-							<p className="text-red-500 font-noto">{error}</p>
-						</div>
-					)}
+				</div>
+				<div className="w-full border-t-2 border-t-[#D8DEE9] flex flex-col justify-center items-center mt-6 p-4">
+					<label htmlFor="login" className="font-noto block">
+						Already have an account?
+					</label>
+					<button
+						id="login"
+						className="w-full bg-[#5E81AC] p-3 shadow-xl rounded-lg my-3 font-ubuntu text-white hover:bg-[#81A1C1] transition-colors flex justify-center items-center"
+						onClick={() => {
+							navigate("/");
+						}}
+					>
+						Login
+					</button>
 				</div>
 			</div>
 		</div>

@@ -21,11 +21,14 @@ export default {
       black: colors.black,
       red: colors.red,
       gray: colors.gray,
+      green: colors.green,
       // slate: colors.slate
     },
     backgroundImage: {
       'bgImage': "url('/src/assets/images/background.jpg')",
       'register': "url('/src/assets/images/registerPage.jpg')",
+      'manufacturer': "url('/src/assets/images/manufacturer.jpg')",
+      "transporter": "url('/src/assets/images/transporter.jpg')",
     },
     plugins: [],
   }

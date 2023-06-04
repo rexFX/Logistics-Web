@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.jsx";
 import Login from "./pages/auth/login.jsx";
 import Register from "./pages/auth/register.jsx";
+import Manufacturer from "./pages/dashboard/manufacturer.jsx";
 import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
 				element: <Register />,
 			},
 		],
+	},
+	{
+		path: "/manufacturer",
+		element: <Manufacturer />,
 	},
 ]);
 
