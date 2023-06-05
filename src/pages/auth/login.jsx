@@ -23,13 +23,14 @@ const Login = () => {
 				const { token, details } = res.data;
 				localforage.setItem("name", details.name);
 				localforage.setItem("email", details.email);
-				localforage.setItem("type", details.type);
+				localforage.setItem("role", details.role);
+				localforage.setItem("address", details.address);
 				localforage.setItem("token", token).then(() => {
 					setError("");
 					setLoading(false);
-					if (details.type === "manufacturer") {
+					if (details.role === "manufacturer") {
 						navigate("/manufacturer");
-					} else if (details.type === "transporter") {
+					} else if (details.role === "transporter") {
 						navigate("/transporter");
 					} else {
 						setError("Invalid user type");
