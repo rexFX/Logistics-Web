@@ -4,6 +4,7 @@ import App from "./App.jsx";
 import Login from "./pages/auth/login.jsx";
 import Register from "./pages/auth/register.jsx";
 import Manufacturer from "./pages/dashboard/manufacturer.jsx";
+import Transporter from "./pages/dashboard/transporter.jsx";
 import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
 	{
 		path: "/manufacturer",
 		element: <Manufacturer />,
+	},
+	{
+		path: "/transporter",
+		element: <Transporter />,
 	},
 ]);
 

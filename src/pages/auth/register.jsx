@@ -15,7 +15,7 @@ const Register = () => {
 	const [error, setError] = useState("");
 	const [checkError, setCheckError] = useState(false);
 	const [dropdown, setDropdown] = useState(false);
-	const [selectedOption, setSelectedOption] = useState("");
+	const [selectedRole, setSelectedRole] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState("");
 
@@ -34,7 +34,7 @@ const Register = () => {
 				phone: phoneNumber,
 				address: address,
 				pincode: pincode,
-				role: selectedOption,
+				role: selectedRole.toLowerCase(),
 			})
 			.then(() => {
 				setSuccess("User Registered Successfully");
@@ -191,12 +191,12 @@ const Register = () => {
 									setDropdown(!dropdown);
 								}}
 							>
-								{selectedOption === "" ? (
+								{selectedRole === "" ? (
 									<span className="text-gray-400">
 										What should we call you?
 									</span>
 								) : (
-									<span>{selectedOption}</span>
+									<span>{selectedRole}</span>
 								)}
 
 								{dropdown ? <FiChevronUp /> : <FiChevronDown />}
@@ -207,7 +207,7 @@ const Register = () => {
 										className="font-noto hover:bg-gray-200 w-full p-3 text-center cursor-pointer"
 										onClick={(e) => {
 											e.preventDefault();
-											setSelectedOption("transporter");
+											setSelectedRole("Transporter");
 											setDropdown(false);
 										}}
 									>
@@ -217,7 +217,7 @@ const Register = () => {
 										className="font-noto hover:bg-gray-200 w-full p-3 text-center rounded-b-lg cursor-pointer"
 										onClick={(e) => {
 											e.preventDefault();
-											setSelectedOption("manufacturer");
+											setSelectedRole("Manufacturer");
 											setDropdown(false);
 										}}
 									>
