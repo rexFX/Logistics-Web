@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import localforage from "localforage";
 import MessageBox from "./messageBox";
+import io from "socket.io-client";
 
+let socket;
 const Transporter = () => {
 	const navigate = useNavigate();
 	const [msgList, setMsgList] = useState([]);
@@ -16,6 +18,7 @@ const Transporter = () => {
 	const [refresh, setRefresh] = useState(false);
 	const [name, setName] = useState("");
 	const [refreshing, setRefreshing] = useState(false);
+	const [msgBoxTitleName, setMsgBoxTitleName] = useState("");
 
 	const orderList = useRef([]);
 	const token = useRef("");
@@ -29,28 +32,32 @@ const Transporter = () => {
 	};
 
 	const pushNormalMessage = (message, amount, isTherePayment) => {
+		const payload = {
+			writtenBy: "transporter",
+			text: message,
+			amount: amount,
+			request: isTherePayment === true && amount > 0,
+			paid: false,
+		};
+
 		setMsgList((prevMsgList) => [
 			...prevMsgList,
 			{
-				verification: email.current,
-				orderID: orderID,
-				writtenBy: "transporter",
-				text: message,
-				amount: amount,
-				request: isTherePayment === true && amount > 0,
-				paid: false,
+				...payload,
 			},
 		]);
+
+		socket.emit("send_message", {
+			payload: payload,
+			orderID: orderID,
+		});
+
 		axios.post(
 			import.meta.env.VITE_BACKEND + `/api/postMessages/`,
 			{
 				verification: email.current,
 				orderID: orderID,
-				writtenBy: "transporter",
-				text: message,
-				amount: amount,
-				request: isTherePayment === true && amount > 0,
-				paid: false,
+				...payload,
 			},
 			{
 				headers: {
@@ -61,6 +68,7 @@ const Transporter = () => {
 	};
 
 	useEffect(() => {
+		socket = io(import.meta.env.VITE_BACKEND);
 		localforage.getItem("name").then((value) => {
 			setName(value);
 		});
@@ -82,7 +90,7 @@ const Transporter = () => {
 						axios
 							.get(import.meta.env.VITE_BACKEND + `/api/fetchOrderList/`, {
 								params: {
-									verification: `${email.current}`,
+									email: `${email.current}`,
 									from: `${email.current}`,
 								},
 								headers: {
@@ -98,6 +106,10 @@ const Transporter = () => {
 							});
 					});
 			});
+
+		return () => {
+			socket.disconnect();
+		};
 	}, []);
 
 	useEffect(() => {
@@ -105,7 +117,7 @@ const Transporter = () => {
 			axios
 				.get(import.meta.env.VITE_BACKEND + `/api/fetchOrderList/`, {
 					params: {
-						verification: `${email.current}`,
+						email: `${email.current}`,
 						from: `${email.current}`,
 					},
 					headers: {
@@ -138,49 +150,39 @@ const Transporter = () => {
 	}, [search]);
 
 	useEffect(() => {
-		const interval = setInterval(async () => {
-			if (prevOrderIDRef.current.length > 0) {
-				await axios
-					.get(import.meta.env.VITE_BACKEND + `/api/fetchMessages/`, {
-						params: {
-							orderID: prevOrderIDRef.current,
-							verification: email.current,
-						},
-						headers: {
-							authorization: `Bearer ${token.current}`,
-						},
-					})
-					.then((res) => {
-						if (res.data.success) {
-							if (res.data.message.messages.length !== prevMsgListRef.current.length) {
-								setMsgList(res.data.message.messages);
-							}
-						}
-					})
-					.catch((err) => {
-						console.log(err);
-					});
-			}
-		}, 10000);
+		prevOrderIDRef.current = orderID;
+	}, [orderID]);
 
-		return () => clearInterval(interval);
-	}, []);
+	useEffect(() => {
+		const order = prevOrderIDRef.current;
+		if (order.length > 0) {
+			socket.emit("join", order);
+			socket.on(order, function (message) {
+				const { writtenBy, text, amount, request, paid } = message;
+				setMsgList((prevMsgList) => [...prevMsgList, { writtenBy, text, amount, request, paid }]);
+			});
+		}
+		return () => {
+			if (order.length > 0) {
+				socket.emit("leave", order);
+				socket.removeAllListeners(order);
+			}
+		};
+	}, [orderID]);
 
 	useEffect(() => {
 		prevMsgListRef.current = msgList;
 	}, [msgList]);
 
-	useEffect(() => {
-		prevOrderIDRef.current = orderID;
-	}, [orderID]);
-
 	const msgFetcher = (e) => {
 		const value = JSON.parse(e.target.value);
+		setMsgBoxTitleName(`Order ID: ${value.orderID} | From: ${value.From} | To: ${value.To}`);
+
 		axios
 			.get(import.meta.env.VITE_BACKEND + `/api/fetchMessages/`, {
 				params: {
 					orderID: value.orderID,
-					verification: email.current,
+					email: email.current,
 				},
 				headers: {
 					authorization: `Bearer ${token.current}`,
@@ -216,8 +218,8 @@ const Transporter = () => {
 	}
 
 	return (
-		<div className="h-screen w-screen bg-manufacturer bg-cover bg-center flex flex-col md:flex-row justify-start overflow-y-auto">
-			<div className="shadow-2xl shadow-right h-full w-full flex flex-col justify-center items-center bg-[#D8DEE9] md:w-[35%]">
+		<div className="h-screen w-screen bg-transporter bg-cover bg-center flex flex-col md:flex-row justify-start overflow-y-auto">
+			<div className="shadow-2xl shadow-right h-full w-full flex flex-col justify-center items-center bg-[#D8DEE9] md:w-[40%] lg:w-[35%]">
 				<div className="w-full flex justify-evenly items-center p-4">
 					<span className="font-noto text-xl">Welcome {name.split(" ")[0]}!</span>
 					<button className="w-24 mr-2 bg-[#5E81AC] p-3 shadow-xl rounded-lg my-3 font-ubuntu text-white hover:bg-[#81A1C1] transition-colors" onClick={logoutHandler}>
@@ -285,7 +287,7 @@ const Transporter = () => {
 				</div>
 			</div>
 
-			{contactName.length > 0 && <MessageBox contactName={contactName} msgList={msgList} role={role} sendMessageHelper={pushNormalMessage} />}
+			{contactName.length > 0 && <MessageBox contactName={contactName} msgList={msgList} role={role} sendMessageHelper={pushNormalMessage} title={msgBoxTitleName} />}
 		</div>
 	);
 };

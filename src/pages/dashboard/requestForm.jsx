@@ -19,7 +19,7 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 	const [errorText, setErrorText] = useState("");
 	const [requestDest, setRequestDest] = useState("");
 	const [requestSource, setRequestSource] = useState("");
-	const [orderID, setOrderID] = useState(uid());
+	const [orderID, setOrderID] = useState(uid().toUpperCase());
 
 	const cancelRequest = () => {
 		requestFormToggle(false);
