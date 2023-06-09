@@ -51,12 +51,12 @@ const Register = () => {
 	return (
 		<div className="shadow-2xl shadow-left h-full w-full flex flex-col justify-center items-center bg-[#ECEFF4] bg-opacity-[75%] md:w-[45%] lg:w-[35%]">
 			<div className="p-4 h-full w-80 flex flex-col justify-center items-center">
-				<h1 className="font-poppins font-bold text-4xl">
-					Create Account
-				</h1>
+				<h1 className="font-poppins font-bold text-4xl">Create Account</h1>
 				<div className="mt-2 w-full">
 					<form className="h-full flex flex-col justify-center items-center mt-5">
 						<input
+							id="fullName"
+							name="fullName"
 							type="text"
 							className="p-3
 								mb-2
@@ -74,6 +74,8 @@ const Register = () => {
 							required
 						/>
 						<input
+							id="email"
+							name="email"
 							type="email"
 							className="p-3
 								block
@@ -90,6 +92,8 @@ const Register = () => {
 							required
 						/>
 						<input
+							id="password"
+							name="password"
 							type="password"
 							className="p-3 m-2
 								block
@@ -106,6 +110,8 @@ const Register = () => {
 							required
 						/>
 						<input
+							id="address"
+							name="address"
 							type="text"
 							className="p-3
 							block
@@ -123,6 +129,8 @@ const Register = () => {
 						/>
 						<div className="w-full flex justify-between items-center m-2">
 							<input
+								id="pincode"
+								name="pincode"
 								type="text"
 								className="p-3
 								w-24
@@ -138,6 +146,8 @@ const Register = () => {
 								required
 							/>
 							<input
+								id="countryCode"
+								name="countryCode"
 								type="tel"
 								className="p-3
 								w-14
@@ -153,6 +163,8 @@ const Register = () => {
 								required
 							/>
 							<input
+								id="phone"
+								name="phone"
 								type="tel"
 								className="p-3
 								w-32
@@ -191,13 +203,7 @@ const Register = () => {
 									setDropdown(!dropdown);
 								}}
 							>
-								{selectedRole === "" ? (
-									<span className="text-gray-400">
-										What should we call you?
-									</span>
-								) : (
-									<span>{selectedRole}</span>
-								)}
+								{selectedRole === "" ? <span className="text-gray-400">What should we call you?</span> : <span>{selectedRole}</span>}
 
 								{dropdown ? <FiChevronUp /> : <FiChevronDown />}
 							</button>
@@ -234,16 +240,12 @@ const Register = () => {
 						</button>
 						{checkError && (
 							<div className="w-full flex justify-center items-center mb-6">
-								<p className="text-red-500 font-noto">
-									{error}
-								</p>
+								<p className="text-red-500 font-noto">{error}</p>
 							</div>
 						)}
 						{success.length > 0 && (
 							<div className="w-full flex justify-center items-center">
-								<p className="text-green-600 font-noto text-bold">
-									{success}
-								</p>
+								<p className="text-green-600 font-noto text-bold">{success}</p>
 							</div>
 						)}
 					</form>

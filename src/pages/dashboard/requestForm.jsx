@@ -7,7 +7,7 @@ import ShortUniqueId from "short-unique-id";
 
 const uid = new ShortUniqueId({ length: 10 });
 
-const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, givenAddress, token, email }) => {
+const RequestForm = ({ socket, requestFormToggle, transporterList, refreshToggle, name, givenAddress, token, email }) => {
 	const [selectedQuantity, setSelectedQuantity] = useState("");
 	const [selectedTransporter, setSelectedTransporter] = useState("");
 	const [selectedTransporterEmail, setSelectedTransporterEmail] = useState("");
@@ -39,20 +39,40 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 		setError(false);
 		e.preventDefault();
 
+		const id = uid();
+
+		const payload = {
+			from: requestSource,
+			to: requestDest,
+			orderID: orderID,
+			address: address,
+			quantity: selectedQuantity,
+			transporterName: selectedTransporter,
+			manufacturerName: name,
+			transporter: selectedTransporterEmail,
+			manufacturer: email,
+		};
+
+		const text = [
+			{
+				id: id,
+				text: `Order Request (OrderID: ${orderID}): I have to deliver ${selectedQuantity} units of goods to ${requestDest}. Pickup is ${requestSource}. Please let me know if you are interested in delivering this order.`,
+				from: requestSource,
+				to: requestDest,
+				writtenBy: "manufacturer",
+				request: false,
+				amount: 0,
+				paid: false,
+			},
+		];
+
 		axios
 			.post(
 				import.meta.env.VITE_BACKEND + `/api/postOrderMessages/`,
 				{
+					id: id,
 					verification: email,
-					orderID: orderID,
-					from: requestSource,
-					to: requestDest,
-					quantity: selectedQuantity,
-					manufacturer: email,
-					transporter: selectedTransporterEmail,
-					transporterName: selectedTransporter,
-					manufacturerName: name,
-					address: address,
+					...payload,
 				},
 				{
 					headers: {
@@ -61,6 +81,13 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 				}
 			)
 			.then(() => {
+				socket.emit("send_order", {
+					msg: {
+						...payload,
+						messages: text,
+					},
+					receiver: selectedTransporterEmail,
+				});
 				refreshToggle();
 				setSendLoading(false);
 				requestFormToggle(false);
@@ -81,7 +108,7 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 	};
 
 	return (
-		<div className="flex-1 md:m-28 bg-[#D8DEE9] md:rounded-lg shadow-lg border-[1px] p-14">
+		<div className="flex-1 md:m-28 bg-[#D8DEE9] bg-opacity-[90%] md:rounded-lg shadow-lg border-[1px] p-14">
 			<div className="h-full w-full flex flex-col items-center justify-center">
 				<div className="w-full flex p-3 justify-evenly items-center">
 					<h1 className="w-full font-noto text-2xl text-left">Request Transportation</h1>
@@ -91,8 +118,12 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 				</div>
 				<div className="mt-2 w-full flex-1 flex justify-center items-center">
 					<form className="w-full flex flex-col justify-center items-center">
-						<label className="font-noto text-left w-[80%]">Order ID</label>
+						<label htmlFor="orderID" className="font-noto text-left w-[80%]">
+							Order ID
+						</label>
 						<input
+							name="orderID"
+							id="orderID"
 							type="text"
 							className="p-3
 									w-[80%]
@@ -109,8 +140,12 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 							value={orderID}
 							disabled
 						/>
-						<label className="font-noto text-left w-[80%] mt-3">To</label>
+						<label htmlFor="requestDest" className="font-noto text-left w-[80%] mt-3">
+							To
+						</label>
 						<input
+							name="requestDest"
+							id="requestDest"
 							type="text"
 							className="p-3
 									w-[80%]
@@ -127,9 +162,13 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 							value={requestDest}
 							onChange={(e) => setRequestDest(e.target.value)}
 						/>
-						<label className="font-noto text-left w-[80%] mt-3">From</label>
+						<label htmlFor="requestSource" className="font-noto text-left w-[80%] mt-3">
+							From
+						</label>
 						<input
 							type="text"
+							name="requestSource"
+							id="requestSource"
 							className="p-3
 									w-[80%]
 									block
@@ -145,9 +184,13 @@ const RequestForm = ({ requestFormToggle, transporterList, refreshToggle, name, 
 							value={requestSource}
 							onChange={(e) => setRequestSource(e.target.value)}
 						/>
-						<label className="font-noto text-left w-[80%] mt-3">Manufacturer Address</label>
+						<label htmlFor="address" className="font-noto text-left w-[80%] mt-3">
+							Manufacturer Address
+						</label>
 						<input
 							type="text"
+							name="address"
+							id="address"
 							className="p-3
 									w-[80%]
 									block
@@ -290,10 +333,10 @@ RequestForm.propTypes = {
 	transporterList: PropTypes.array.isRequired,
 	refreshToggle: PropTypes.func.isRequired,
 	name: PropTypes.string.isRequired,
-	orderIDHelper: PropTypes.func.isRequired,
 	givenAddress: PropTypes.string.isRequired,
 	token: PropTypes.string.isRequired,
 	email: PropTypes.string.isRequired,
+	socket: PropTypes.object.isRequired,
 };
 
 export default RequestForm;
