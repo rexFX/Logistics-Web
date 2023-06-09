@@ -1,6 +1,6 @@
-`Work in progress`
-
 # Logistics Web App
+
+-   Backend: https://github.com/rexFX/Logistics-Backend
 
 ### Features:
 
